@@ -1,0 +1,15 @@
+{
+  "schema": "schema/0001_initial.sql",
+  "sha256": "acbd0461505737f26bd759e20a9bf37042d16a13be77d351564b249043bb7eb8",
+  "frozenAt": "2026-11-07T17:50:08.827Z",
+  "version": "0001",
+  "judgmentColumnBan": [
+    "diagnosis",
+    "risk_level",
+    "activity_score",
+    "stage_numeric",
+    "response",
+    "line_number_auto"
+  ],
+  "note": "G2 后冻结；改合同需新迁移文件，不读本文件改历史"
+}
