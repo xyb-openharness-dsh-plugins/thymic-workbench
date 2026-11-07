@@ -1,0 +1,17 @@
+{
+  "packageName": "@xyb-community/thymic-workbench",
+  "title": "小橡宝 · 胸腺癌工作台",
+  "repository": "https://github.com/xyb-openharness-dsh-plugins/thymic-workbench",
+  "description": "本机优先的胸腺癌（前纵隔胸腺上皮肿瘤）病理与复核档案、分期记录（Masaoka-Koga 与 TNM 并列不换算）、手术与后续治疗线、重症肌无力与免疫相关不良反应关联、复查随访工作台",
+  "slug": "thymic-workbench",
+  "layoutMode": "business-first",
+  "businessWidth": 0.65,
+  "targetUsers": "胸腺癌（胸腺上皮肿瘤中的恶性类型，含胸腺鳞癌、胸腺神经内分泌癌等）患者与家属，覆盖围手术期、术后辅助治疗、复发与转移阶段；合并重症肌无力的患者单独标注",
+  "scenario": "把散落在病理报告、复核意见、影像报告、手术记录、出院小结和复查资料里的信息整理成一条有来源的时间线；病理与分期逐字保留医生原文，多体系并存不换算；复查节奏与就诊问题清单自动整理",
+  "coreFlow": [
+    "建立档案并录入病理与复核记录，保留报告原文与机构来源",
+    "记录手术与后续治疗事件，跟踪肿瘤标志物与影像复查节奏",
+    "带着整理好的时间线、趋势图与问题清单去胸外科/肿瘤科复诊"
+  ],
+  "completion": "复诊前能在一页里说清病理结论与复核分歧、当前分期体系与医生原文、最近一次影像与化验、下次复查要做什么、要问医生什么"
+}
