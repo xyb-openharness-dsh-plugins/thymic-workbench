@@ -1,0 +1,33 @@
+{
+  "files": {
+    "trials.jsonl": {
+      "sha256": "3d44542445d7c3fd6efe7ec343f1b1660c539150698658e44f8bc4817b04d89f",
+      "bytes": 31877
+    },
+    "trials.sqlite": {
+      "sha256": "d348bcf2c2118c265a5f2903ca5df7296fe771c7439dd8db5f661e95938437ad",
+      "bytes": 40960
+    }
+  },
+  "recordCount": 53,
+  "dbCount": 53,
+  "sourceStatusRows": 4,
+  "window": {
+    "from": "2020-01-01",
+    "to": "2026-11-07"
+  },
+  "query": "query.cond=thymic carcinoma OR thymic epithelial tumor; AREA[StartDate]RANGE",
+  "channels": {
+    "clinicaltrials_gov": {
+      "ok": true,
+      "count": 53,
+      "totalReported": 53
+    },
+    "chictr": "未采集",
+    "cde_cn": "未采集",
+    "ictrp": "未采集"
+  },
+  "fieldMapAssert": true,
+  "generatedAt": "2026-11-07",
+  "note": "状态未核实，入排以研究中心为准；FAILED.md 记未采集通道（未采集≠零结果）。"
+}
