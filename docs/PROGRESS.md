@@ -1,7 +1,7 @@
 # PROGRESS · 夜班进度（每里程碑更新）
 
-当前：M2 完成，进入 M3 数据模型。
-已完成：领取、M0、M1；M2 = 原型 v0.2.0 七件套（四件套+primer 三件套）+ 两套档案 A/B + 探针（probe-thymic-m2 15/15、self-test 反向、probe-disease-primer 10/10）+ README 五段与 7 张实渲截图 + check 链全绿。
-下一步：M3 schema/0001_initial.sql + freeze-contract。
-阻塞：无。
-闸口结论：G1=通过（待追认）；G2=通过（待追认，独立评审缺位待人工）；G3/V1/V2/V3 未到。
+当前：M6 装机产物层完成，待用户重启 Desktop 验收界面。
+已完成：M0–M5 + M6（pack 四要素自检通过、pnpm 装入 web profile v0.2.0、bundle 第 66 项登记、patch root 实查）。
+下一步：用户重启 DSH Desktop + 新建会话 → 真机走查（V2 后半/V3）→ M7 tag/release 草稿 → M8 BACKLOG 回填草稿 → M9 回流。
+阻塞：界面加载与真机走查需要用户重启 Desktop（本会话按纪律不代重启）。
+闸口结论：G1/G2/G3/V1/V2（产物层）=自动签认通过（待追认）；V2 界面加载/V3=待人工。数据层与 MinerU 解析=未实现（如实）。
