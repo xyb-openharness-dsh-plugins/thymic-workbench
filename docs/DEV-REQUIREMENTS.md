@@ -33,8 +33,12 @@ npm run check = 语法 + 单测 + 版本四处同源 + schema 断言 + 红线词
 | 资料目录 | DSH_HOME/thymic-workbench（装机后）；原型态演示目录 | 用户明确指定后改 config.root 参数 |
 | 语言/品牌色 | 中文；主色占位用家族语义 token（oak 深绿灰） | 换 token 文件即可 |
 
-## §六 本夜教训（M9 回流候选）
+## §六 本夜教训（M9 已回流 starter L70–L73，rc.25）
 
-- L1：probe-disease-primer 曾跑 starter examples 参考页而非原型本体——检查器必须显式断言被测 URL 含原型路径；回流为 check 链加强。
-- L2：/claim 机器人夜间不在线——签认流按权限自查补标签须留痕（时间+原因），晨审追认。
-- L3：并发额度限制下子代理一次只跑一个，批量检索改内联有界检索（≤3 次）+ 本地文件 grep。
+- L1：probe-disease-primer 默认目标是 starter examples——本仓新探针（probe-thymic-m2）默认对象=本仓原型，并加横幅提醒（回流 L70）。
+- L2：/claim 机器人夜间不在线——限时 2 分钟→admin 自查补标签→留痕待追认（回流 L73）。
+- L3：子代理并发受限——批量检索改内联有界（≤3 次）+ 本地 grep。
+- L4：check-probe-coverage 全量探针名写死 probe-aml-m2.mjs——改本仓名 + 探针内嵌 COVERED 清单与 ROUTES 比对 + self-test（回流 L70）。
+- L5：build-client 布尔注入带引号骗过宿主合同判据——布尔字面量直注（回流 L71）。
+- L6：trial 快照必须按 check-trial-snapshot 家族合同出四件套（回流 L72）。
+- L7：check-pack 测 MinerU token 必须显式 home/env 注入——宿主 shell 可能有真实 MINERU_TOKEN/CERVIPAL_MINERU_SECRET（本仓 scripts/check-pack.mjs 实测踩到）。
