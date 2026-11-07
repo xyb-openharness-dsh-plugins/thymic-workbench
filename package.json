@@ -1,6 +1,6 @@
 {
   "name": "@xyb-community/thymic-workbench",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "本机优先的胸腺癌（前纵隔胸腺上皮肿瘤）病理与复核档案、分期记录（Masaoka-Koga 与 TNM 并列不换算）、手术与后续治疗线、重症肌无力与免疫相关不良反应关联、复查随访工作台",
   "private": true,
   "type": "module",
