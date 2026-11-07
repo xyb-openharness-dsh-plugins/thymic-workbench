@@ -1114,6 +1114,14 @@ function renderAgent() {
 function agentBuild() {
   const slot = $('#dsh-conversation-slot');
   slot.innerHTML = `<div class="agent-card"><h4>提示词预览（发送前可读 · 由你在宿主会话发送）</h4><pre>${esc(buildPrompt())}</pre></div>`;
+  /* 34 号 agent-draft 一键：iframe（装机态）里把本页提示词交给宿主外壳的草稿桥（只填不发）；
+     file:// 独立打开时没有宿主监听方，静默跳过（本地演示面板已可见同一份提示词）。 */
+  if (window.parent && window.parent !== window) {
+    try {
+      const target = window.location.origin && window.location.origin !== 'null' ? window.location.origin : '*';
+      window.parent.postMessage({ type: 'thymic-workbench:agent-draft', prompt: buildPrompt(), send: true }, target);
+    } catch (_) { /* 宿主未监听或跨源受限：保持本地演示态，不重试不报错 */ }
+  }
 }
 function agentDemo() {
   const slot = $('#dsh-conversation-slot');
