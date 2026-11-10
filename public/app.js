@@ -13,8 +13,8 @@
    6. 私密默认 = 情绪类感受条目；身体症状按可分享记录。 */
 
 const APP_INFO = {
-  version: '0.2.0',
-  build: '2026-11-08',
+  version: '0.2.1',
+  build: '2026-11-11',
   channel: 'prototype',
   channelLabel: '交互原型 · 未接入 DSH'
 };
