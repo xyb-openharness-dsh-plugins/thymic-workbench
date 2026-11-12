@@ -28,6 +28,7 @@ function createDemoSource({ version, build, dataRoot }) {
     profile: () => null,
   }
 }
+import { Workbench } from './workbench.js'
 import { servePublic } from './server.js'
 import { createApiHandler, API_PREFIX, UI_PREFIX } from './routes.js'
 import { version, build } from '../lib/version.js'
@@ -49,9 +50,28 @@ function sendJson(res, status, body) {
   res.end(buf)
 }
 
-/** 数据源（M5 骨架）：事实层未实现，bootstrap 如实声明 demo-skeleton。 */
+/**
+ * 数据源：配了 root 就开真库（sqlite），没配就退到内存演示库并如实声明 demo-skeleton。
+ * 装进 Desktop 时 cordis.patch.yml 会注入 dataRoot，所以用户看到的是自己的库。
+ */
 function openDataSource(root) {
-  return createDemoSource({ version, build, dataRoot: root || null })
+  if (typeof root !== 'string' || root.trim() === '') {
+    return createDemoSource({ version, build, dataRoot: null })
+  }
+  const wb = new Workbench({ root })
+  wb.open()
+  const demo = createDemoSource({ version, build, dataRoot: root })
+  return {
+    ...demo,
+    db: wb.db,
+    bootstrap: () => ({ ...demo.bootstrap(), mode: 'sqlite', dataRoot: wb.dataRoot, profiles: wb.listProfiles() }),
+    listProfiles: () => wb.listProfiles(),
+    createProfile: (body) => wb.createProfile(body),
+    deleteProfile: (key) => wb.deleteProfile(key),
+    dataRoot: () => wb.dataRoot,
+    setDataRoot: (dir) => wb.setDataRoot(dir),
+    close: () => wb.close(),
+  }
 }
 
 export function apply(ctx, config = {}) {

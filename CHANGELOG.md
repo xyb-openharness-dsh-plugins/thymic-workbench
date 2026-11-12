@@ -1,3 +1,17 @@
+## 0.2.2 — 2026-11-12
+
+三缺口批量补齐（本仓原为 demo-skeleton：`createDemoSource` 的 `db` 恒为 null，schema 0001 从未被打开）：
+
+- **数据层从桩变真库**：新增 `dsh/store.js`（幂等迁移/ledger/sha256）与 `dsh/workbench.js`（listProfiles/createProfile/deleteProfile/dataRoot/setDataRoot）；`openDataSource` 配了 `config.root` 就开 sqlite，没配仍退内存演示库并如实声明 `demo-skeleton`。
+- **新建患者档案**：档案弹窗加「＋ 新建我的档案」→ `POST /api/thymic/api/profiles` → `INSERT INTO profile(..., is_demo=0)` → 立刻切到新档案（空记录起步，各页走空态不白屏）；demo 档案不删不改。
+- **多档案**：`GET /api/thymic/api/profiles`；`DELETE` 只作用于 `is_demo=0`，未命中返回 `deleted:null` + 原因（不回 200 假装删了）。
+- **资料目录真入口**：面板顶栏「配置目录」→ `pickDirectory` → 口径硬拒（主目录/桌面/下载根/tmp，客户端+服务端 `checkDataDir` 双判）→ `POST /api/thymic/api/root` 落盘回显，重开仍在（`0002` 迁移的 `app_setting`）；页面「更改位置…」改为指向面板按钮。
+- **临床试验补四段**：线索页新增「参与匹配的已确认字段」（只列 confirmed 的分子/病理/分期）+ 关键词检索 + 每条结果的证据行（`? 待确认 — 快照未含入排原文`）+ 「需补充信息 / 暂无可对照项（不编百分数）/ 不是入组资格」声明；空态写「查不到 ≠ 没有研究」。
+- 修：`public/app.js` 里两处调用 `apiBase()` 但全仓没有定义（打开设置会 ReferenceError）——补上按自身路径推导的实现。
+- 迁移：`schema/0002_profiles.sql`（`ALTER TABLE profile ADD COLUMN is_demo` + `app_setting`，只增不改）。
+- 校验：三闸门全绿；`npm run check` 全绿；`audit 39/40`（0 失败，1 待人工）；页面版本字面量同步 0.2.2。
+- 运行时实测（本机 stub 宿主）：空库 profiles `[]` → 新建 → `isDemo:false` 落库；`{/tmp}→400`；`{专用目录}→200` 持久；删自建 `200`；删 demo `deleted:null`。
+
 ## 0.2.1（2026-11-11，AI 对话面板激活逻辑修复）
 
 - **修真实缺陷**：原实现用 `Boolean(conversation)` 判断"有没有会话"。customFrame 下宿主即使没有会话也会传一个隐藏的

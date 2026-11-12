@@ -133,7 +133,7 @@ const TRIALS = D.trials;
 const state = { view: 'dashboard', profile: 'A', agentOpen: false, agentSize: 'std', sel: [],
   range: 'all', zoom: 100, toggles: { treatment: true, keypoints: true }, pin: null, saved: [], sub: {},
   query: '', parsing: false, parseError: false, loaded: {}, parsingName: '', lastUpload: null, uploads: 0,
-  privateOpen: false, trialTopic: '全部', questions: [] };
+  privateOpen: false, trialTopic: '全部', trialQuery: '', questions: [] };
 const defaultSel = (k) => {
   const mm = METRICS[k] || {};
   const num = (DASH_KEYS[k] || []).filter((c) => mm[c] && mm[c].points.some(p => typeof p.v === 'number')).slice(0, 2);
@@ -147,6 +147,14 @@ const P = () => PROFILES[state.profile];
 const M = () => METRICS[state.profile];
 
 /* ---------------- helpers ---------------- */
+/* 接口根：页面挂在 <root>/api/thymic/ui/ 下，接口就在 <root>/api/thymic。
+   独立启动与宿主两条链路都用同一份前端，所以按自身路径推、不写死。 */
+function apiBase() {
+  const p = location.pathname;
+  const i = p.indexOf('/ui/');
+  if (i >= 0) return p.slice(0, i);
+  return '';
+}
 const fmtDate = (d) => d;
 const delta = (m) => {
   if (!m.points || m.points.length < 2) return null;
@@ -1029,17 +1037,36 @@ function vTrials() {
       <div class="rows">${qs.length ? qs.map(q => row(esc(q), '')).join('') : '<p class="muted" style="padding:12px">还没有具体试验的问题。</p>'}</div></div>`;
   }
   const topics = ['全部', ...Array.from(new Set(TRIALS.map(t => t.topic)))];
-  const list = TRIALS.filter(t => state.trialTopic === '全部' || t.topic === state.trialTopic);
+  /* 段1 建档：只有"已确认入库"的字段参与匹配（候选/待核对不参与）。
+     本台可结构化的只有分子与病理两类；其余入排条件快照里没有原文，一律走"待确认"。 */
+  const confirmed = []
+  const mol = (P().molecular || []).filter((m) => m.status === 'confirmed')
+  if (mol.length) confirmed.push('分子：' + mol.map((m) => m.name || m.label || m.value).filter(Boolean).join(' / '))
+  if (P().pathology && P().pathology.rows && P().pathology.rows.length) confirmed.push('病理：' + P().pathology.rows[0][1])
+  if (P().stageMK && P().stageMK.rows && P().stageMK.rows.length) confirmed.push('分期：' + P().stageMK.rows[0][1])
+  const kw = (state.trialQuery || '').trim().toLowerCase()
+  const list = TRIALS.filter(t => (state.trialTopic === '全部' || t.topic === state.trialTopic) &&
+    (!kw || String(t.title || '').toLowerCase().includes(kw) || String(t.id || '').toLowerCase().includes(kw)))
   return `${pageHead(true)}
   <div class="notice">线索不是推荐：登记信息可能滞后，<b>状态与入排标准以研究中心为准</b>。数据来源 ClinicalTrials.gov，
     采集窗口 2026-11-08（在线通道）；ChiCTR / 中国药物临床试验登记平台本轮未采集，覆盖未知。</div>
+  <div class="card"><div class="card-head"><h2>参与匹配的已确认字段</h2></div>
+    <p class="muted" style="padding:0 12px 8px">${confirmed.length ? esc(confirmed.join(' · ')) : '还没有已确认入库的分子/病理字段；未核对的候选不参与匹配。'}
+      · 只列已确认项，待核对候选不进池。</p>
+    <div class="chips" style="padding:0 12px 12px"><input id="trial-kw" type="search" placeholder="关键词：药名 / 登记号 / 主题" value="${esc(state.trialQuery || '')}" aria-label="按关键词检索登记摘录"><button class="soft" data-action="trial-search">检索</button></div>
+  </div>
   <div class="chips" role="group" aria-label="按关注点筛选">
     ${topics.map(t => `<button class="chip${state.trialTopic === t ? ' on' : ''}" data-topic="${esc(t)}">${esc(t)}</button>`).join('')}
   </div>
-  <div class="rows">${list.map(t => `<div class="card topic-card">
+  <div class="rows">${list.length ? '' : `<div class="card"><p class="muted" style="padding:12px">这一组条件下没有登记摘录。<b>查不到 ≠ 没有研究</b>：清空关键词或换关注点再看，必要时直接问医生。</p></div>`}${list.map(t => `<div class="card topic-card">
     <div class="card-head"><h2>${esc(t.title)}</h2><span class="muted">${esc(t.id)}</span></div>
     <div class="chips">${pill(t.phase, 'violet')}${pill(t.status, t.status.includes('RECRUITING') ? 'green' : 'grey')}${pill(t.topic, 'grey')}</div>
     <p class="muted" style="margin-top:8px">申办 / 登记单位：${esc(t.sponsor)} · 最后核对 ${esc(t.last_verified)}</p>
+    <ul class="muted" style="margin:6px 0 0 18px;font-size:12.5px">
+      <li>? <b>待确认</b> — 条件类别：入排条件（本台快照未含入排原文）</li>
+      <li>记录里是：${confirmed.length ? esc(confirmed.join(' · ')) : '尚无已确认字段'} · 条件要求：见登记页原文</li>
+    </ul>
+    <p class="muted" style="font-size:12.5px">分层：<b>需补充信息</b>；符合度：<b>暂无可对照项（不编百分数）</b>。这不是入组资格，也不代表效果。</p>
     <div class="actions"><button data-action="save-trial" data-id="${esc(t.id)}">${state.saved.includes(t.id) ? '取消收藏' : '收藏'}</button>
       <button class="soft" data-action="ask-trial" data-id="${esc(t.id)}">加进入组问题</button>
       <a class="source-link" href="${esc(t.url)}" target="_blank" rel="noopener">登记页 ↗</a></div>
@@ -1143,10 +1170,47 @@ function openDialog(eyebrow, title, body, foot = '') {
 const closeDialog = () => $('#dialog').close();
 
 function dlgProfiles() {
-  openDialog('小橡宝', '切换演示档案', Object.entries(PROFILES).map(([k, p]) => `
+  openDialog('小橡宝', '切换档案', Object.entries(PROFILES).map(([k, p]) => `
     <button class="profile-row ${state.profile === k ? 'on' : ''}" data-pick-profile="${k}">
-      <div><b>${esc(p.name)}的资料</b><p>${esc(p.meta)} · ${esc(p.headline)}</p></div><span class="profile-caret">${state.profile === k ? '当前' : '切换'}</span></button>`).join(''),
+      <div><b>${esc(p.name)}的资料</b><p>${esc(p.meta)} · ${esc(p.headline || '')}${p.isDemo === false ? ' · 我建的' : ''}</p></div><span class="profile-caret">${state.profile === k ? '当前' : '切换'}</span></button>`).join('') +
+    '<button class="profile-row" data-action="new-profile"><div><b>＋ 新建我的档案</b><p>演示档案不会被改动；新档案从空记录开始，存本机数据库</p></div><span class="profile-caret">新建</span></button>',
     '<button data-action="close">取消</button>');
+}
+
+/* 新建患者档案：demo 之外的第二类数据（is_demo=0，落本机 sqlite）。 */
+function dlgNewProfile() {
+  openDialog('小橡宝', '新建我的档案',
+    `<p class="muted">只填名字（可以是昵称）。新档案保存在本机数据库，演示档案不受影响。</p>
+     <label class="field">档案名<input id="np-name" maxlength="40" placeholder="例：我自己 / 妈妈"></label>
+     <label class="field">一句话说明（可选）<input id="np-meta" maxlength="40" placeholder="例：确诊 2025-03 · 随访中"></label>
+     <p id="np-err" class="muted" style="color:#a33" hidden></p>`,
+    '<button class="primary" data-action="save-new-profile">保存并切换</button><button data-action="close">取消</button>');
+}
+async function saveNewProfile() {
+  const nameEl = $('#np-name'), metaEl = $('#np-meta'), errEl = $('#np-err');
+  const name = (nameEl && nameEl.value || '').trim();
+  const meta = (metaEl && metaEl.value || '').trim();
+  if (!name) { if (errEl) { errEl.hidden = false; errEl.textContent = '请填写档案名。'; } return; }
+  try {
+    const rsp = await fetch(`${apiBase()}/api/profiles`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name, meta }),
+    });
+    const body = await rsp.json().catch(() => ({}));
+    if (!rsp.ok) throw new Error(body.message || body.error || ('HTTP ' + rsp.status));
+    const slug = body.profileKey;
+    /* 新档案从空记录起步：字段按 demo 的 schema 补齐空值，页面各页给空态而不是白屏。 */
+    PROFILES[slug] = { name, sex: '', age: '', meta: meta || '我自己记录', headline: '', histology: '',
+      mindset: '', path: [], stageMK: null, stageTNM: null, pathology: null, molecular: [], mg: { status: '未记录', rows: [] },
+      immune: null, surgery: null, rt: null, imaging: null, rhythm: [], lines: [], cycles: [],
+      viewpoints: [], symptoms: [], familyTalk: '', docs: [], candidates: [], isDemo: false };
+    METRICS[slug] = {}; EVENTS[slug] = []; DASH_KEYS[slug] = []; DOCS[slug] = []; CANDS[slug] = [];
+    state.profile = slug; state.sel = [];
+    closeDialog(); render();
+    toast('已新建并切换到「' + name + '」；演示档案没有被改动。');
+  } catch (error) {
+    if (errEl) { errEl.hidden = false; errEl.textContent = '新建失败：' + (error.message || error); }
+  }
 }
 /* ---- 文档解析设置：Token 状态与手工保存 ----
    状态只显示掩码与文件路径，原文不回显（服务端也不返回）。
@@ -1299,7 +1363,9 @@ document.addEventListener('click', (e) => {
   const go = (view, subIdx) => { state.view = view; if (subIdx !== undefined) state.sub[view] = subIdx; state.privateOpen = false; location.hash = view; state.pin = null; render(); };
   const map = {
     profiles: dlgProfiles, settings: dlgSettings, about: dlgAbout, help: dlgHelp,
-    close: closeDialog, 'open-store': () => toast('资料目录已激活（演示）'),
+    'new-profile': dlgNewProfile, 'save-new-profile': saveNewProfile,
+    'trial-search': () => { const el = $('#trial-kw'); state.trialQuery = el ? el.value : ''; render(); },
+    close: closeDialog, 'open-store': () => toast('资料目录请在面板顶栏「配置目录」里更换（真调系统选择器）'),
     'go-review': () => go('review'),
     'go-labs': () => go('labs'),
     'go-timeline': () => go('timeline'),
